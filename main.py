@@ -42,7 +42,6 @@ def retrieve_data(link="https://myanimelist.net/topanime.php"):
 
         anime_object = Anime(rank, title, anime_type, num_of_episodes, release_date, members, score, link)
         animes.append(anime_object)
-        # print(f"The anime {title} is a {anime_type} ranked #{rank} with {num_of_episodes} episodes, released on {release_date}, with {members} total members, and a score of {score}")
 
     return animes
 
@@ -94,5 +93,5 @@ def save_to_excel(animes):
     print("Finished saving to xlsx file...")
 
 # animes = retrieve_data("https://myanimelist.net/topanime.php?type=airing")
-animes = retrieve_data("https://myanimelist.net/topanime.php?type=upcoming")
-save_to_excel(animes)
+# animes = retrieve_data("https://myanimelist.net/topanime.php?type=upcoming")
+# save_to_excel(animes)
