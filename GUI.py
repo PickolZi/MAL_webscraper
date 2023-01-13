@@ -1,6 +1,7 @@
 from customtkinter import CTk, CTkFrame, CTkLabel, CTkRadioButton, StringVar, CTkButton, CTkImage, CTkEntry
 from PIL import Image
 from main import *
+from urllib.request import urlopen
 
 
 class GUI(CTk):
@@ -20,7 +21,7 @@ class GUI(CTk):
         self.anime_categories_radio_buttons.grid(row=0, column=0, padx=10, pady=10)
 
         # Middle Image
-        self.anime_image = CTkImage(Image.open("tikki.png"), size=(425, 425))
+        self.anime_image = CTkImage(Image.open("MAL.png"), size=(425, 425))
         self.anime_image_label = CTkLabel(self, image=self.anime_image, text="")
         self.anime_image_label.grid(row=0, column=1, padx=10, pady=10)
         # TODO: Grab #1 anime image
@@ -44,13 +45,27 @@ class GUI(CTk):
         """
         Gathers information from the 2 radio buttons and entry form to create an xlsx file.
         """
+        # Grabs the filename from the entry and uses it for the xlsx file.
         filename = self.filename_entry.get() + ".xlsx"
+        if filename == ".xlsx":
+            filename = "results.xlsx"
+
+        # Uses the anime category radio button to grab the correct link path.
         link_categories = ["", "airing", "upcoming", "tv", "movie", "ova", "ona", "bypopularity", "favorite"]
         index = self.anime_categories.index(self.anime_categories_radio_buttons.get_value())
         link = LINK
         if index != 0:
             link += "?type=" + link_categories[index]
 
+        # Grabs #1 image
+        image_link = grab_image_from_google(link)
+        image = urlopen(image_link)
+        self.anime_image_label.configure(image=CTkImage(Image.open(image), size=(425, 425)))
+
+        # Decides how to sort the data.
+        pass
+
+        # Downloads anime data and saves as xlsx file.
         animes = retrieve_data(link)
         save_to_excel(animes)
 

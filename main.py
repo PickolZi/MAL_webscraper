@@ -40,10 +40,27 @@ def retrieve_data(link="https://myanimelist.net/topanime.php"):
             score = "N/A"
         link = anime.h3.a["href"]
 
+
         anime_object = Anime(rank, title, anime_type, num_of_episodes, release_date, members, score, link)
         animes.append(anime_object)
 
     return animes
+
+
+def grab_image_from_google(url):
+    """
+    :param title: url for MAL anime page.
+    :return: url for #1 ranked anime image
+    """
+    html = requests.get(url).text
+    soup = BeautifulSoup(html, "html.parser")
+    query = soup.table.find_all("tr")[1].h3.a["href"]
+
+    html = requests.get(query).text
+    soup = BeautifulSoup(html, "html.parser")
+    image_url = soup.table.img["data-src"]
+
+    return image_url
 
 
 def save_to_excel(animes):
