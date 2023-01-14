@@ -10,6 +10,7 @@ class GUI(CTk):
 
         # Settings
         self.title("MyAnimeList Webscraper")
+        self.wm_iconbitmap("MAL.ico")
         # self.geometry("500x500")
 
         # Left Column - Anime Categories Frame
@@ -63,11 +64,11 @@ class GUI(CTk):
         self.anime_image_label.configure(image=CTkImage(Image.open(image), size=(425, 425)))
 
         # Decides how to sort the data.
-        pass
+        sort_method = self.sorting_categories_radio_buttons.get_value()
 
         # Downloads anime data and saves as xlsx file.
         animes = retrieve_data(link)
-        save_to_excel(animes)
+        save_to_excel(animes, sort_method)
 
 
 class RadioButtonFrame(CTkFrame):

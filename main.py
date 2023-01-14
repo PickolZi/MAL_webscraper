@@ -63,7 +63,7 @@ def grab_image_from_google(url):
     return image_url
 
 
-def save_to_excel(animes):
+def save_to_excel(animes, sort_method):
     """
     :param animes: Anime object
     Creates xlsx file and saves the Anime object's data to the spreadsheet.
@@ -73,6 +73,8 @@ def save_to_excel(animes):
 
     ws = wb.active
     ws.title = "Top Animes"
+
+    animes = sort_animes(animes, sort_method)
 
     # Create header information
     ws["A1"] = "Rank:"
@@ -85,16 +87,15 @@ def save_to_excel(animes):
     ws["H1"] = "Link:"
 
     # Add anime information
-    for anime in animes:
-        col = anime.rank + 1
-        ws[f"A{col}"] = anime.rank
-        ws[f"B{col}"] = anime.title
-        ws[f"C{col}"] = anime.anime_type
-        ws[f"D{col}"] = anime.num_of_episodes
-        ws[f"E{col}"] = anime.release_date
-        ws[f"F{col}"] = anime.members
-        ws[f"G{col}"] = anime.score
-        ws[f"H{col}"] = anime.link
+    for index, anime in enumerate(animes):
+        ws[f"A{index+2}"] = anime.rank
+        ws[f"B{index+2}"] = anime.title
+        ws[f"C{index+2}"] = anime.anime_type
+        ws[f"D{index+2}"] = anime.num_of_episodes
+        ws[f"E{index+2}"] = anime.release_date
+        ws[f"F{index+2}"] = anime.members
+        ws[f"G{index+2}"] = anime.score
+        ws[f"H{index+2}"] = anime.link
 
     # Configuration settings
     ws.column_dimensions["B"].width = 64
@@ -109,6 +110,98 @@ def save_to_excel(animes):
     wb.save(filename=filename)
     print("Finished saving to xlsx file...")
 
-# animes = retrieve_data("https://myanimelist.net/topanime.php?type=airing")
-# animes = retrieve_data("https://myanimelist.net/topanime.php?type=upcoming")
-# save_to_excel(animes)
+
+def sort_animes(animes, sort_method):
+    altered_anime_list = []
+
+    if sort_method == "rank":
+        altered_anime_list = animes
+
+    elif sort_method == "title":
+        titles = {}
+        for index, anime in enumerate(animes):
+            key = anime.title
+
+            # A bit of cleaning
+            if key[0] == '\"':
+                key = key[1:-1]
+            titles[key] = index
+
+        # Creates a list of sorted anime titles
+        titles_list_order = sorted(titles)
+        for title in titles_list_order:
+            # Grabs anime by alphabetical order.
+            altered_anime_list.append(animes[titles[title]])
+
+    elif sort_method == "anime type":
+        anime_types = ["TV", "Movie", "OVA", "ONA"]
+        temp_lists = [list() for _ in anime_types]
+        for anime in animes:
+            try:
+                index = anime_types.index(anime.anime_type)
+                temp_lists[index].append(anime)
+            except ValueError:
+                continue
+
+        # Combining the 4 lists into 1: altered_anime_list
+        for temp_list in temp_lists:
+            altered_anime_list.extend(temp_list)
+
+    elif sort_method == "episodes":
+        temp_animes_list = []
+        episodes_list = []
+
+        end_animes = []
+
+        for anime in animes:
+            if anime.num_of_episodes == "?":
+                end_animes.append(anime)
+                continue
+
+            current_episode = int(anime.num_of_episodes)
+            for episode in episodes_list:
+                if current_episode <= episode:
+                    index = episodes_list.index(episode)
+                    temp_animes_list.insert(index, anime)
+                    episodes_list.insert(index, current_episode)
+                    break
+            else:
+                temp_animes_list.append(anime)
+                episodes_list.append(current_episode)
+
+        altered_anime_list = temp_animes_list + end_animes
+
+    elif sort_method == "release date":
+        pass
+
+    elif sort_method == "members":
+        pass
+
+    elif sort_method == "score":
+        pass
+
+    return altered_anime_list
+
+
+if __name__ == '__main__':
+
+    animes = retrieve_data("https://myanimelist.net/topanime.php")
+    # animes = retrieve_data("https://myanimelist.net/topanime.php?type=upcoming")
+    # save_to_excel(animes)
+
+
+    sorting_options = """
+    rank
+    title
+    anime type
+    episodes
+    release date
+    members
+    score
+    """
+    temp_options = sorting_options.strip().split("\n")
+    # animes = sort_animes(animes, temp_options[1])
+    animes = sort_animes(animes, "title")
+    for anime in animes:
+        print(anime.title)
+
