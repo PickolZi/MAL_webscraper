@@ -1,6 +1,6 @@
 from customtkinter import CTk, CTkFrame, CTkLabel, CTkRadioButton, StringVar, CTkButton, CTkImage, CTkEntry
 from PIL import Image
-from main import *
+from functionality import *
 from urllib.request import urlopen
 
 
@@ -10,7 +10,7 @@ class GUI(CTk):
 
         # Settings
         self.title("MyAnimeList Webscraper")
-        self.wm_iconbitmap("MAL.ico")
+        self.wm_iconbitmap("images/MAL.ico")
         # self.geometry("500x500")
 
         # Left Column - Anime Categories Frame
@@ -22,7 +22,7 @@ class GUI(CTk):
         self.anime_categories_radio_buttons.grid(row=0, column=0, padx=10, pady=10)
 
         # Middle Image
-        self.anime_image = CTkImage(Image.open("MAL.png"), size=(425, 425))
+        self.anime_image = CTkImage(Image.open("images/MAL.png"), size=(425, 425))
         self.anime_image_label = CTkLabel(self, image=self.anime_image, text="")
         self.anime_image_label.grid(row=0, column=1, padx=10, pady=10)
         # TODO: Grab #1 anime image
@@ -68,7 +68,7 @@ class GUI(CTk):
 
         # Downloads anime data and saves as xlsx file.
         animes = retrieve_data(link)
-        save_to_excel(animes, sort_method)
+        save_to_excel(animes, sort_method, filename)
 
 
 class RadioButtonFrame(CTkFrame):

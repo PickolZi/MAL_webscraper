@@ -63,12 +63,11 @@ def grab_image_from_google(url):
     return image_url
 
 
-def save_to_excel(animes, sort_method):
+def save_to_excel(animes, sort_method, filename):
     """
     :param animes: Anime object
     Creates xlsx file and saves the Anime object's data to the spreadsheet.
     """
-    filename = "results.xlsx"
     wb = Workbook()
 
     ws = wb.active
@@ -172,36 +171,106 @@ def sort_animes(animes, sort_method):
         altered_anime_list = temp_animes_list + end_animes
 
     elif sort_method == "release date":
-        pass
+        temp_anime_list = []
+        temp_release_date = []
+        end_animes = []
+
+        MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+
+        for anime in animes:
+            current_release_date = anime.release_date.split(" ")[:2]
+
+            # No release date, add to end of the list.
+            if current_release_date[0] == "-":
+                end_animes.append(anime)
+                continue
+
+            # Month and year of the anime release date.
+            year = current_release_date[1]
+            month = current_release_date[0]
+
+            # Release dates with no months.
+            if month not in MONTHS:
+                year = int(month)  # This is year, just the format is different when scraping.
+                month = "N/A"
+                end_animes.insert(0, anime)  # If there's no month, that means it's made in this recent year, so it should be put towards the beginning of the end_animes list.
+                continue
+            if month != "N/A":
+                year = int(year)
+                month = MONTHS.index(month)
+
+            # Sort the dates by month that do have both the months and years
+            for date in temp_release_date:
+                if month <= date[0]:
+                    index = temp_release_date.index(date)
+                    temp_release_date.insert(index, (month, year))
+                    temp_anime_list.insert(index, anime)
+                    break
+            else:
+                temp_release_date.append((month, year))
+                temp_anime_list.append(anime)
+
+        final_anime_list = []
+        final_release_date = []
+
+        # Sorting by year
+        for date, anime in zip(temp_release_date, temp_anime_list):
+            current_year = date[1]
+            for tuple in final_release_date:
+                year = tuple[1]
+                if current_year <= year:
+                    index = [x[1] for x in final_release_date].index(year)
+                    if current_year == year:
+                        skip = [x[1] for x in final_release_date].count(year)
+                        index += skip
+                    final_anime_list.insert(index, anime)
+                    final_release_date.insert(index, date)
+                    break
+            else:
+                final_anime_list.append(anime)
+                final_release_date.append(date)
+
+        altered_anime_list = final_anime_list + end_animes
 
     elif sort_method == "members":
-        pass
+        temp_anime_list = []
+        temp_member_count_list = []
+
+        for anime in animes:
+            # Turns current member from string to int.
+            current_member_count = anime.members.split(",")
+            current_member_count = "".join(current_member_count)
+            current_member_count = int(current_member_count)
+
+            # Sorts the anime objects and member counts into the temporary lists.
+            for member_count in temp_member_count_list:
+                if current_member_count <= member_count:
+                    index = temp_member_count_list.index(member_count)
+                    temp_anime_list.insert(index, anime)
+                    temp_member_count_list.insert(index, current_member_count)
+                    break
+            else:
+                temp_anime_list.append(anime)
+                temp_member_count_list.append(current_member_count)
+
+        altered_anime_list = temp_anime_list
 
     elif sort_method == "score":
-        pass
+        temp_anime_list = []
+        temp_score_list = []
+
+        for anime in animes:
+            current_score = anime.score
+            for score in temp_score_list:
+                if current_score <= score:
+                    index = temp_score_list.index(score)
+                    temp_anime_list.insert(index, anime)
+                    temp_score_list.insert(index, current_score)
+                    break
+            else:
+                temp_anime_list.append(anime)
+                temp_score_list.append(current_score)
+
+        altered_anime_list = temp_anime_list
 
     return altered_anime_list
-
-
-if __name__ == '__main__':
-
-    animes = retrieve_data("https://myanimelist.net/topanime.php")
-    # animes = retrieve_data("https://myanimelist.net/topanime.php?type=upcoming")
-    # save_to_excel(animes)
-
-
-    sorting_options = """
-    rank
-    title
-    anime type
-    episodes
-    release date
-    members
-    score
-    """
-    temp_options = sorting_options.strip().split("\n")
-    # animes = sort_animes(animes, temp_options[1])
-    animes = sort_animes(animes, "title")
-    for anime in animes:
-        print(anime.title)
-
